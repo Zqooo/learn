@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- <script src="./reactivity.global.js"></script> -->
+  <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+  <div id="app"></div>
+  <script>
+      // 缓存代理结果 require()q
+      const {effect, reactive, computed} = VueReactivity;
+      const obj = { firstName: 'p', lastName: 'Hq', no:1 }
+      const state = reactive(obj)
+
+      // 计算属性的使用
+      let fullName = computed(()=>{
+       return state.no + state.firstName
+      })
+
+      const runner = effect(()=>{
+        app.innerHTML = `${fullName.value}`
+      })
+      runner()
+
+      setTimeout(()=>{
+        state.no++
+      },1000)
+  </script>
+</body>
+</html>

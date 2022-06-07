@@ -1,13 +1,3 @@
-/* 
-  effect 响应函数
-  1.创建ReactiveEffect类，每调用一个effect，创建一个_effect实例，
-  ····_effect用于更新视图
-  ······proxy代理中，当代理数据被更改时，有使用对应数据的effect需再次调用更新视图
-
-  track 依赖收集函数
-  1.
-
-*/
 
 /* 
 activeEffect => 用于记录当前操作的effect
@@ -94,19 +84,6 @@ export function effect(fn, options = {} as any) {
   */
 
 }
-
-/* 
-  WeakMap 功能类似于Map，无法转换成其他数据格式，键必须是对象
-  Map，Map的key值可以被枚举，而枚举的原理则是通过一个数组存储对应的key值
-    形成强引用，Map的key值被遍历数组所引用，导致key值在没有被引用时仍无法被回收
-  而WeakMap的key值不可被枚举，底层没做枚举实现，key值在没任何引用时，能被回收，避免内存泄漏
-  example: 
-    let o1 = {a: 1}
-    const wMap = new WeakMap()
-    wMap.set(o1,{})
-    // 当o1设为null时，{a: 1}没有任何指针指向，能被垃圾回收机制系统处理
-    wMap.has(o1) // undefined wMap中没有o1这个键
-*/
 
 // 依赖收集函数 track
 // targetMap 存放每个元数据的依赖关系表
