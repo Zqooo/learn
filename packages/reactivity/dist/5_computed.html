@@ -16,13 +16,21 @@
       const obj = { firstName: 'p', lastName: 'Hq', no:1 }
       const state = reactive(obj)
 
-      effect(()=>{
-        app.innerHTML = `${state.firstName}${state.lastName}`
+      // 计算属性的使用
+      let fullName = computed(()=>{
+       return state.no + state.firstName
       })
 
-      // setTimeout(()=>{
-      //   state.hobby.com = 'all or web' 
-      // },1000)
+
+
+      const runner = effect(()=>{
+        app.innerHTML = `${fullName.value}`
+      })
+      runner()
+
+      setTimeout(()=>{
+        state.no++
+      },1000)
   </script>
 </body>
 </html>

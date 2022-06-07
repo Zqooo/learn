@@ -37,7 +37,7 @@ export class ReactiveEffect {
   public active = true;
   public parent = null;
   public deps = []; // 记录effect中关联了哪些属性，后续清除需使用
-  constructor(public fn, public scheduler) { }
+  constructor(public fn, public scheduler?) { }
   run() {
     // console.log(1);
     if (!this.active) {
@@ -130,13 +130,17 @@ export function track(target, key) {
     if (!deps) {
       depsMap.set(key, (deps = new Set()))
     }
-    // 判断是否收集重复的effect函数，若没有，则收集
-    const shouldTrack = !deps.has(activeEffect)
-    if (shouldTrack) {
-      deps.add(activeEffect)
-      // effect实例上deps的作用： 记录用到了哪些属性
-      activeEffect.deps.push(deps)
-    }
+    trackEffects(deps)
+  }
+}
+
+export function trackEffects(deps) {
+  // 判断是否收集重复的effect函数，若没有，则收集
+  const shouldTrack = !deps.has(activeEffect)
+  if (shouldTrack) {
+    deps.add(activeEffect)
+    // effect实例上deps的作用： 记录用到了哪些属性
+    activeEffect.deps.push(deps)
   }
 }
 
@@ -159,7 +163,6 @@ export function track(target, key) {
 */
 
 export function trigger(target, key, value) {
-
   // 判断关系依赖表是否存在该元数据，若没有，则该元数据没依赖任何effect进行视图更新处理
   let depsMap = targetMap.get(target)
   if (!depsMap) {
@@ -167,7 +170,10 @@ export function trigger(target, key, value) {
     return
   }
   let effects = depsMap.get(key)
+  triggerEffects(effects)
+}
 
+export function triggerEffects(effects) {
   if (effects) {
     effects = new Set(effects)
     effects.forEach(effect => {
