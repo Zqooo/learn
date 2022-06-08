@@ -7,6 +7,11 @@ export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive'
 }
 
+// 判断是否为代理对象（响应式数据）
+export function isReactive(value){
+  return value && value[ReactiveFlags.IS_REACTIVE]
+}
+
 // proxy代理配置
 export const baseHanlder = {
   get(target, key, receiver) {

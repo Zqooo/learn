@@ -17,6 +17,31 @@
     }
   })
 
+🌍 计算属性 -> computed函数 返回的是一个对象，相当于封箱操作
+    const target = computed(cb)
+  用户可以通过target.value进行计算属性的取值
+  而封箱操作则是通过 ComputedRefImpl 这个类完成。
+  callback本身也是一个函数，用于和目标数据完成双向依赖绑定的逻辑函数
+    callback = () => {
+      return proxy.name + proxy.age
+    }
+  将callback通过ReactiveEffect类，封箱成ReactiveEffect实例，
+  ReactiveEffect的核心逻辑，是通过run执行实例的逻辑函数，同时会自动重构最新的依赖关系
+
+  ComputedRefImpl实例通过ReactiveEffect实例获取最新的数据
+
+  设置dirty变量作为脏数据开关
+
+  于trigger:
+  ReactiveEffect实例设置调度函数scheduler，当依赖数据发生变化，通知ReactiveEffect实例时，调用scheduler将脏数据开关设置为true，同时通知所有依赖该ComputedRefImpl实例的数据更新逻辑
+  
+  于track:
+  其他数据依赖ComputedRefImpl实例时，会建立依赖关系，收集在ComputedRefImpl实例的deps属性上
+  otherEffect = () => {
+    console.log(target.value)
+  }
+  同时该计算属性的依赖数据没发生变化时，dirty为false，则使用缓存数据；若发生变化，则重新调用ReactiveEffect实例(以cb为核心逻辑)的run函数，去获取最新的数据动态，并将该数据存放在缓存属性上
+
 🚩 computed函数
   传值: getterOrOptions
   通过isFunction 进行传值判断，确定getter和setter对应的函数

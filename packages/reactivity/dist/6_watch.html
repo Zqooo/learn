@@ -7,26 +7,29 @@
   <title>Document</title>
 </head>
 <body>
-  <!-- <script src="./reactivity.global.js"></script> -->
-  <script src="../../../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+  <script src="./reactivity.global.js"></script>
+  <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
   <div id="app"></div>
   <script>
-      // 缓存代理结果 require()q
-      const {effect, reactive, computed} = VueReactivity;
-      const obj = { firstName: 'p', lastName: 'Hq', no:1 }
-      const state = reactive(obj)
+      const {effect, reactive, computed, watch} = VueReactivity;
+      // const {effect, reactive, computed, watch} = Vue;
+      const state = reactive({ no:1,a:1,b:2 })  
 
-      // 计算属性的使用
-      let fullName = computed(()=>{
-       return state.no + state.firstName
+      /*
+        watch_Vue3
+        ✨在vue2或vue3中，监视目标如果是个对象，无法获取到具体的新值或旧值，返回的值是一个最新动态的代理对象
+          如果监控的是一个对象，默认深度监控（🌍尽量不要直接监控某个对象，默认会递归访问对象的属性）
+        ✨watch监视某个响应式数据的属性，需要写成函数的形式
+      */
+      watch(()=>state.no, (newVal,oldVal,onCleanup) => {
+        onCleanup(()=>{
+          console.log(123);
+        })
+        console.log(newVal);
+        console.log(oldVal);
       })
-
-      const runner = effect(()=>{
-        app.innerHTML = `${fullName.value}`
-      })
-      runner()
-
-      setTimeout(()=>{
+      
+      setInterval(()=>{
         state.no++
       },1000)
   </script>

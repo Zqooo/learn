@@ -22,7 +22,8 @@ var VueReactivity = (() => {
   __export(src_exports, {
     computed: () => computed,
     effect: () => effect,
-    reactive: () => reactive
+    reactive: () => reactive,
+    watch: () => watch
   });
 
   // packages/reactivity/src/effect.ts
@@ -124,6 +125,9 @@ var VueReactivity = (() => {
   };
 
   // packages/reactivity/src/baseHanlder.ts
+  function isReactive(value) {
+    return value && value["__v_isReactive" /* IS_REACTIVE */];
+  }
   var baseHanlder = {
     get(target, key, receiver) {
       if (key === "__v_isReactive" /* IS_REACTIVE */) {
@@ -162,6 +166,43 @@ var VueReactivity = (() => {
     const proxy = new Proxy(target, baseHanlder);
     reactiveMap.set(target, proxy);
     return proxy;
+  }
+
+  // packages/reactivity/src/watch.ts
+  function watch(source, cb) {
+    let get;
+    if (isReactive(source)) {
+      get = () => traversal(source);
+    } else if (isFunction(source)) {
+      get = source;
+    }
+    let oldValue;
+    let cleanup;
+    const onCleanup = (fn) => {
+      cleanup = fn;
+    };
+    const job = () => {
+      cleanup && cleanup();
+      const newValue = effect2.run();
+      cb(newValue, oldValue, onCleanup);
+      oldValue = newValue;
+    };
+    let scheluder = job;
+    const effect2 = new ReactiveEffect(get, scheluder);
+    oldValue = effect2.run();
+  }
+  function traversal(value, set = /* @__PURE__ */ new Set()) {
+    if (!isObject(value)) {
+      return value;
+    }
+    if (set.has(value)) {
+      return value;
+    }
+    set.add(value);
+    for (const key in value) {
+      traversal(value[key], set);
+    }
+    return value;
   }
 
   // packages/reactivity/src/computed.ts
