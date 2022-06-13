@@ -1,37 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
+
 <body>
   <script src="./reactivity.global.js"></script>
   <!-- <script src="../../../node_modules/vue/dist/vue.global.js"></script> -->
   <div id="app"></div>
   <script>
-      const {effect, reactive, computed, watch} = VueReactivity;
-      // const {effect, reactive, computed, watch} = Vue;
-      const state = reactive({ no:1,a:1,b:2 })  
+    const {
+      effect,
+      reactive,
+      computed,
+      watch
+    } = VueReactivity;
+    // const {effect, reactive, computed, watch} = Vue;
+    const state = reactive({
+      no: 0
+    })
 
-      /*
-        watch_Vue3
-        ✨在vue2或vue3中，监视目标如果是个对象，无法获取到具体的新值或旧值，返回的值是一个最新动态的代理对象
-          如果监控的是一个对象，默认深度监控（🌍尽量不要直接监控某个对象，默认会递归访问对象的属性）
-        ✨watch监视某个响应式数据的属性，需要写成函数的形式
-      */
-      watch(()=>state.no, (newVal,oldVal,onCleanup) => {
-        onCleanup(()=>{
-          console.log(123);
-        })
-        console.log(newVal);
-        console.log(oldVal);
+    /*
+      watch_Vue3
+      ✨在vue2或vue3中，监视目标如果是个对象，无法获取到具体的新值或旧值，返回的值是一个最新动态的代理对象
+        如果监控的是一个对象，默认深度监控（🌍尽量不要直接监控某个对象，默认会递归访问对象的属性）
+      ✨watch监视某个响应式数据的属性，需要写成函数的形式
+    */
+
+    let i = 3000;
+
+    function getData(timer) {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(timer)
+        }, timer);
       })
-      
-      setInterval(()=>{
-        state.no++
-      },1000)
+    }
+
+    /*
+      问题场景: 通过watch发送请求，分别有两个请求：
+        state.no = 1 时，发送请求一，请求时间为2000ms，将视图改为2000
+        state.no = 2 时，发送请求二，请求时间为1000ms，将视图改为1000
+      问题关键: 
+        目标数据改变时，应该以最新动态进行视图渲染，state.no = 2为最新动态
+        但因为请求二的响应时间比请求一快，被请求一的动态覆盖，导致试图停留在上一次数据更改的渲染状态
+      解决方案:
+        使用onCleanup，利用闭包的原理，设置控制阀
+      功能原理： 
+        在watch中，cleanup会在下次动态更改的执行函数中触发，更改上一次动态中阀门值，限制请求数据到达时的逻辑运行
+    */        
+    watch(() => state.no, async (newVal, oldVal, onCleanup) => {
+      let passFlag = true
+      onCleanup(() => {
+        passFlag = false
+      })
+      i-=1000
+      const inner = await getData(i)
+      passFlag && (app.innerHTML = inner)
+    })
+
+    state.no = 1
+    state.no = 2
   </script>
 </body>
+
 </html>
