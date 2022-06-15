@@ -26,6 +26,7 @@ class ComputedRefImpl {
   // dirty 脏数据标识，为true时，则表示计算属性依赖的数据被更改
   public dirty = true;
   public deps;
+  public __v_isRef = true
   /*
     计算属性的get函数
     对于ReactiveEffect子类对象的二次理解

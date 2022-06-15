@@ -1,5 +1,5 @@
 ✨watch模块
-  ___原代码中，监控属性不在reactive中
+  ___原代码中，监控属性不在reactive模块中
 监控函数
 
 🚩watch函数(source,cb)
