@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.ts"],
+  "sourcesContent": ["export default{\n  a:1\n}"],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA,MAAO,cAAO;AAAA,IACZ,GAAE;AAAA,EACJ;",
+  "names": []
+}
