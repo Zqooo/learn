@@ -7,29 +7,30 @@
   <title>Document</title>
 </head>
 <body>
-  <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+  <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+  <script src="./runtime-dom.global.js"></script>
   <div id="app"></div>
   <script>
       // 使用库中自带的渲染器，
-      const { render, h } = VueRuntimeDOM
+      // const { render, h } = VueRuntimeDOM
       // const { createRenderer, h } = VueRuntimeDOM
       // // 通过这个api，用户可以自定义自己渲染逻辑，例如兼容其他平台，而vue本身主要是对浏览器平台进行兼容
       // const { render, createApp } = createRenderer({
       //   // patchProp
-      //   // ...nodeOps
+      //   // ... 
       //   createElement(element){
       //     return document.createElement(element)
       //   },
       //   setElementText(element, text){
       //     element.textContent = text
       //   },
-      //   insert(element, container){
-      //     container.appendChild(element)
-      //   }
+      //   // insert(element, container){
+      //   //   container.appendChild(element)
+      //   // }
       // })
 
-      console.log(h('h1','hello world'));
-      render(h('h1','hello world'),app);
+      // console.log(h('h1','hello world'));
+      // render(h('h1','hello world'),app);
   </script>
 </body>
 </html>
