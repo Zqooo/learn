@@ -26,5 +26,4 @@ export function patchStyle(el, preValue, nextValue){
       }
     }
   }
-  
 }

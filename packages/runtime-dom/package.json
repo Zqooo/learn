@@ -5,7 +5,7 @@
   "module": "dist/runtime-dom.esm-bundler.js",
   "unpkg": "dist/runtime-dom.global.js",
   "buildOptions":{
-    "name": "VueRuntimeDom"
+    "name": "VueRuntimeDOM"
   },
   "dependencies": {
     "@vue/shared": "workspace:^1.0.0"

@@ -7,12 +7,14 @@
   <title>Document</title>
 </head>
 <body>
-  <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
-  <script src="./runtime-dom.global.js"></script>
-  <div id="app"></div>
+  <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+  <!-- <script src="./runtime-dom.global.js"></script> -->
+  <!-- <div id="app"></div> -->
   <script>
-      // 使用库中自带的渲染器，
-      // const { render, h } = VueRuntimeDOM
+      //  vue3的渲染器的使用以及虚拟dom的了解和应用
+      // 使用库中自带的渲染器
+      const { render, h, createVNode } = VueRuntimeDOM
+
       // const { createRenderer, h } = VueRuntimeDOM
       // // 通过这个api，用户可以自定义自己渲染逻辑，例如兼容其他平台，而vue本身主要是对浏览器平台进行兼容
       // const { render, createApp } = createRenderer({
@@ -29,8 +31,19 @@
       //   // }
       // })
 
-      // console.log(h('h1','hello world'));
-      // render(h('h1','hello world'),app);
+      //  vue3中h函数通过重载(js的函数重载), 让用户有相对自由的用法
+      //  而h生成虚拟节点的关键，是createVNode函数(该函数中包含优化的api)
+      const t1 = h('h1', 'hello world')
+      const t2 = h('h1', {style: {color : 'red'}}, 123)
+      const t3 = h('h1', ['hello', 'world'])
+      const t4 = h('h1', h('h1', 'span'))
+      const t5 = h('h1', null, 
+      h('span',{style: {color : 'red'}}, 'span'),
+      h('span',{style: {color : 'blue'}}, 'span'),
+      h('span', 'span'))
+      render(t5,app);
+      
+      console.log(createVNode('h1', null, ['hello', 'world']));
   </script>
 </body>
 </html>
