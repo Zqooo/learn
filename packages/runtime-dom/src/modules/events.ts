@@ -6,7 +6,7 @@ function createInvoker(preValue) {
   return invoker
 }
 
- 
+//  设置事件绑定属性
 export function patchEvent(el, eventName, nextValue) {
   // 事件绑定列表
   /*
