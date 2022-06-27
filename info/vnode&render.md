@@ -247,6 +247,59 @@
 
     
   ✨ 解析createRenderer函数的内容
+
+  确定用法:
+    const { render } = createRenderer(renderOptions)
+
+    export function createRenderer(options){
+      <!-- 将options中的方法解构出来并重命名 -->
+      let {
+        createElement: hostCreateElement,
+        createTextNode: hostCreateTextNode,
+        insert: hostInsert,
+        removeChild: hostRemoveChild,
+        parentNode: hostParentNode,
+        qeurySelector: hostQuerySelector,
+        nextSibling: hostNextSibling,
+        setText: hostSetText,
+        setElementText: hostSetElementText,
+        patchProp : hostPatchProp
+      } = options
+      
+      -----------------------------------------------
+      ✨函数的设计从下往上
+
+
+      
+
+      🚩 function patch(n1, n2, container){
+        if(n1 == null){
+          <!-- 初步渲染 -->
+          mountElement(n2,container)
+        }
+      }
+
+
+      <!-- 返回一个render函数, -->
+      明确render的用法:
+      render(vnode, container)
+
+      🚩function render(vnode, container){
+        <!-- 判断是挂载元素还是卸载元素 -->
+        if(vnode == null){
+          ❌<!-- 卸载元素 -->
+        } else {
+          <!-- patch函数的目的是为了diff算法，函数封装，将每个逻辑抽离出来，实现代码的整洁 -->
+          patch(container.vnode || null, vnode, container)
+          container.vnode = vnode
+        }
+      }
+      return {render}
+    }
+
+  
+  
+  
   
   
   
