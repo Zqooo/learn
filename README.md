@@ -1,2 +1,1 @@
-# vue3_principle
-all for learning vue3
+✨ learning vue3
