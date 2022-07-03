@@ -35,7 +35,7 @@ export function patchEvent(el, eventName, nextValue) {
   } else {
     // 截取事件名 onclick -> click
     // el.addEventListener('click', fn)
-    const eName = eventName.slice(2)
+    const eName = eventName.slice(2).toLowerCase()
     if (nextValue) {
       // 初始化赋值
       const invoker = createInvoker(nextValue)

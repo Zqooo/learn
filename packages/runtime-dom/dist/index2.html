@@ -10,14 +10,39 @@
   <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
   <script src="./runtime-dom.global.js"></script>
   <div id="app"></div>
-  <script>
+  <script> 
       //  实现和手写渲染核心概念
       const {  h, createVNode, render } = VueRuntimeDOM
 
-      const t1 = h('h1',{} ,['hello', 'world'])
+      const t1 = h('h1',{a:1, style:{color:'red'},onClick:()=>alert(1)} ,
+      [
+        h('p', {key:'a'}, '1'),
+        h('p', {key:'b'}, '2'),
+        h('p', {key:'c'}, '3'),
+        h('p', {key:'d'}, '4'),
+        h('p', {key:'f'}, '5'),
+        h('p', {key:'g'}, '6'),
+      ]
+       )
       render(t1,app);
-      console.log(render);
-      console.log(t1);
+      
+      const t2 = h('h1',{a:1, style:{color:'blue'},onClick:()=>alert(2)} ,
+      [
+        
+        h('p', {key:'a'}, '1'),
+        h('p', {key:'b'}, '2'),
+        h('p', {key:'c'}, '3'),
+        h('p', {key:'d'}, '4'),
+      ]
+      )
+      // render(t2,app);
+      setTimeout(()=> {
+        render(t2,app); 
+      },1000)
+      
+      // setTimeout(() => {
+      //   render(null, app)
+      // }, 2000);
   </script>
 </body>
 </html>
