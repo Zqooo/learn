@@ -141,6 +141,11 @@ export function createRenderer(options) {
       e1 = c1.length 
       e2 = c2.length
 
+      1.完成 前后追加 + 前后删除
+      2.未知序列  unknown sequence
+         a b [c d e] f g
+         a b [d e q] f g 
+
     */
 
     let i = 0
@@ -245,6 +250,78 @@ export function createRenderer(options) {
 
     }
 
+
+    /*
+
+      unknown sequence
+      
+      a b [c d e] f g
+      a b [e q d] f g 
+
+      需要用到四指针进行对比
+      分别是s1 -> e1 , s2 -> e2
+      拿出新旧值需要对比的部分
+       
+      在v2中是新节点去旧节点中找复用， v3中是旧节点在新节点中找相同
+    */
+    let s1 = i
+    let s2 = i
+
+    // unknown : 获取操作数量
+    // 如上例子， e2 为 4 - 2 + 1 = 3 
+    let toBePatched = e2 - s2 + 1
+    console.log(toBePatched);
+    
+    // 为新节点设置映射表 
+    const keyToNewIndexMap = new Map()
+    for (let i = s2; i <= e2; i++) {
+      keyToNewIndexMap.set(c2[i].key, i)
+    }
+
+    // 新节点拥有的不同节点已经获取，并且建立映射表
+    // 遍历旧节点，确定与新节点的区别 ，新无则删，新有则patch
+    for (let i = s1; i <= e1; i++) {
+      const oldVNode = c1[i]
+      
+      let newIndex = keyToNewIndexMap.get(oldVNode.key)
+      
+      // 若新节点没有，则卸载改节点
+      if(newIndex == null){
+        unmount(oldVNode)
+      } else {
+        patch(oldVNode, c2[newIndex], el)
+      }
+      
+    }
+    
+    // toBePatched 为unknown状态下的可操作数，-1则为unknown数据的首位索引
+    /*
+      a b [c d e] f g
+      a b [e q d] f g 
+        currentIndex ->  
+          toBePatched是执行长度
+          i是start from start的停止索引 
+          两者相加 直接推到d
+    */ 
+    for(let i = toBePatched - 1 ; i >= 0; i--){
+      const currentIndex = s2 + i
+      
+      // d
+      const child = c2[currentIndex]
+      console.log(c2, currentIndex, s2, i);
+      
+
+      const anchor = currentIndex + 1 < c2.length ?  c2[currentIndex+1].el : null
+      
+      // 若该虚拟节点el上没记录任何数据，则是新增节点
+      if(child.el == null){
+        patch(null,child,el,anchor)
+      } else {
+        // 非新增节点，调整位置，在unknown sequence 中，已经将非新增的可复用节点插入，但位置不对
+        // 同一个节点（同一个指针） insertBefore会根据anchor调整位置
+        hostInsert(child.el, el, anchor)
+      }
+    }
 
   }
 

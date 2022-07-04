@@ -500,6 +500,34 @@ var VueRuntimeDOM = (() => {
           }
         }
       }
+      let s1 = i;
+      let s2 = i;
+      let toBePatched = e2 - s2 + 1;
+      console.log(toBePatched);
+      const keyToNewIndexMap = /* @__PURE__ */ new Map();
+      for (let i2 = s2; i2 <= e2; i2++) {
+        keyToNewIndexMap.set(c2[i2].key, i2);
+      }
+      for (let i2 = s1; i2 <= e1; i2++) {
+        const oldVNode = c1[i2];
+        let newIndex = keyToNewIndexMap.get(oldVNode.key);
+        if (newIndex == null) {
+          unmount(oldVNode);
+        } else {
+          patch(oldVNode, c2[newIndex], el);
+        }
+      }
+      for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
+        const currentIndex = s2 + i2;
+        const child = c2[currentIndex];
+        console.log(c2, currentIndex, s2, i2);
+        const anchor = currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
+        if (child.el == null) {
+          patch(null, child, el, anchor);
+        } else {
+          hostInsert(child.el, el, anchor);
+        }
+      }
     }
     function patchChildren(n1, n2, el) {
       let c1 = n1.children;
@@ -677,6 +705,10 @@ var VueRuntimeDOM = (() => {
 
   // packages/runtime-dom/src/modules/style.ts
   function patchStyle(el, preValue, nextValue) {
+    if (preValue == null)
+      preValue = {};
+    if (nextValue == null)
+      nextValue = {};
     const style = el.style;
     for (let key in nextValue) {
       style[key] = nextValue[key];

@@ -23,6 +23,8 @@
 
 // 设置样式属性
 export function patchStyle(el, preValue, nextValue){
+  if(preValue == null) preValue = {}
+  if(nextValue == null) nextValue = {}
   // 拿到节点的style属性
   const style = el.style
   // 遍历节点的style新值，直接更新到节点中去

@@ -19,20 +19,23 @@
         h('p', {key:'a'}, '1'),
         h('p', {key:'b'}, '2'),
         h('p', {key:'c'}, '3'),
-        h('p', {key:'d'}, '4'),
-        h('p', {key:'f'}, '5'),
-        h('p', {key:'g'}, '6'),
+        h('p', {key:'d', style:{color:'yellow'}}, '4'),
+        h('p', {key:'e'}, '5'),
+        h('p', {key:'f'}, '6'),
+        h('p', {key:'g'}, '7'),
       ]
        )
       render(t1,app);
       
       const t2 = h('h1',{a:1, style:{color:'blue'},onClick:()=>alert(2)} ,
       [
-        
         h('p', {key:'a'}, '1'),
         h('p', {key:'b'}, '2'),
-        h('p', {key:'c'}, '3'),
+        h('p', {key:'e'}, '5'),
+        h('p', {key:'q',  style:{color:'green'}}, 'x'),
         h('p', {key:'d'}, '4'),
+        h('p', {key:'f'}, '6'),
+        h('p', {key:'g'}, '7'),
       ]
       )
       // render(t2,app);
