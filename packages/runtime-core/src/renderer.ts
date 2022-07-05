@@ -270,7 +270,6 @@ export function createRenderer(options) {
     // unknown : 获取操作数量
     // 如上例子， e2 为 4 - 2 + 1 = 3 
     let toBePatched = e2 - s2 + 1
-    console.log(toBePatched);
     
     // 为新节点设置映射表 
     const keyToNewIndexMap = new Map()
@@ -294,7 +293,7 @@ export function createRenderer(options) {
       
     }
     
-    // toBePatched 为unknown状态下的可操作数，-1则为unknown数据的首位索引
+    // toBePatched 为unknown状态下的可操作数
     /*
       a b [c d e] f g
       a b [e q d] f g 
@@ -306,11 +305,8 @@ export function createRenderer(options) {
     for(let i = toBePatched - 1 ; i >= 0; i--){
       const currentIndex = s2 + i
       
-      // d
       const child = c2[currentIndex]
-      console.log(c2, currentIndex, s2, i);
-      
-
+    
       const anchor = currentIndex + 1 < c2.length ?  c2[currentIndex+1].el : null
       
       // 若该虚拟节点el上没记录任何数据，则是新增节点

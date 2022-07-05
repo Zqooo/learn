@@ -503,7 +503,6 @@ var VueRuntimeDOM = (() => {
       let s1 = i;
       let s2 = i;
       let toBePatched = e2 - s2 + 1;
-      console.log(toBePatched);
       const keyToNewIndexMap = /* @__PURE__ */ new Map();
       for (let i2 = s2; i2 <= e2; i2++) {
         keyToNewIndexMap.set(c2[i2].key, i2);
@@ -520,7 +519,6 @@ var VueRuntimeDOM = (() => {
       for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
         const currentIndex = s2 + i2;
         const child = c2[currentIndex];
-        console.log(c2, currentIndex, s2, i2);
         const anchor = currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
         if (child.el == null) {
           patch(null, child, el, anchor);
