@@ -87,6 +87,7 @@
   经过前两步，已经将前后常规序列节点取出，剩下的是未知序列节点
 
   场景简单举例 ---- part1
+  [ 0, 2, 3 ]
   a b(s1) c d e(e1) f g
   a b(s2) q c d(e2) f g
   需要四指针进行对比，分别是s1，s2，e1，e2
@@ -118,10 +119,27 @@
       anchor为null的场景
       a b c d e
       a b q c d
-
+ 
     判断当前us的末位有没有携带真实节点
       若没有，则是新增节点，走patch新增逻辑
       若有，则是在uknown sequence第一环节中已经复用渲染的节点，通过hostInsert进行位置更正
+
+  3. diff
+  a b [c d e] f g
+  a b [q c d] f g 
+
+  set new node list -> 
+    const keyToNewIndexMap = new Map() 
+    [q c d]
+    forEach the new node list --> {q:2, c:3, d:4}
+  
+  set uknown sequence list ->
+    const seq = new Array(toBePatched).fill(0)
+    [c d e]
+    <!-- 获取的节点中，若有值，则寻找最长递增子序列的长度 -->
+    forEach the old node list --> [0, 3, 4] 
+
+    
     
   
     

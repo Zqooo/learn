@@ -10,89 +10,28 @@
 
 <body>
   <script>
+    const arr = [2, 3, 7, 6, 8, 4, 9, 5]
     /*
-      准备阶段 预解析 
-        Foo -> f()  
-        getName -> f(log.5) ❌
-        
-      执行阶段
-        getName -》 f(log.1)
-
-    */ 
-    function Foo() {
-      
-      getName = function () {
-        console.log(1)
-      };
-      return this;
-    }
-    Foo.getName = function () {
-      console.log(2)
-    };
-    Foo.prototype.getName = function () {
-      console.log(3)
-    };
-    var getName = function () {
-      console.log(4)
-    };
-
-    function getName() {
-      console.log(5)
-    }
-    //请写出以下输出结果：
-    getName(); // 4
-    Foo().getName(); //  window.getName() -> 1
-    new Foo.getName(); // . 对象的成员访问  Foo.getName（）-> 2
-    // const a = new Foo() -> {}
-    // a.getName()
-    new Foo().getName(); // 3
-    // const a = new Foo() -> {}
-    // new {}.getName() 
-    new new Foo().getName(); // 3
-    // 
-    Foo.getName(); // 2
-    getName(); // 1
-
-
-
-    function foo(name,age){
-      this.name = name
-      this.age = age
-      console.log('又得上班和学习，好累');
-    }
-
-    const mObj = new foo()
-    //  js 只有函数
-    /*
-        js 
-          普通调用  foo()
-          构造调用  new foo()
-        
-        new
-          1.创建新的空对象 const obj = {}
-          2. 让this指向obj
-          2.1 构建原型关系
-          3. 执行函数
-          4. 返回
-            // 当构造函数中，返回一个普通数据类型，如 ‘1’ ，1 ，true 时，new返回的仍然是实例对象
-            // 当构造函数中，返回一个引用数据类型，如obj ，new 返回的是指定的内容
-            
-    */  
     
-    function myNew(fn){
-      const obj = {}
-      obj.__proto__ = fn.prototype
-      // 获取所有参数 [1,2,3] -> [2,3]
-      const argu = Array.from(arguments).slice(1)
-      // obj.name = 1
-      fn.apply(obj, argu)
-      return obj
+      取出原序列的某一项，和dq的最后一项最比较
+        如果比最后一项大，直接最追加到尾部
+        如果比最后一项小，则找到序列中比他当前大的替换掉
+    */
+    function tx(arr) {
+      const sequence = []
+      arr.forEach(item => {
+        if (sequence.length == 0  || sequence[sequence.length - 1] < item) {
+          sequence.push(item)
+        } else {
+          const firstMoreIndex = sequence.findIndex(_item => _item > item)
+          sequence[firstMoreIndex] = item
+        }
+      })
+
+      return sequence.length
     }
 
-    // 手写call bind apply promise 
-
-    const myobj = myNew(foo, '静哥', '18')
-    console.log(myobj);
+    console.log(tx(arr));
   </script>
 </body>
 

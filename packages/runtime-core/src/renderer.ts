@@ -256,7 +256,7 @@ export function createRenderer(options) {
       unknown sequence
       
       a b [c d e] f g
-      a b [e q d] f g 
+      a b [q c d] f g 
 
       需要用到四指针进行对比
       分别是s1 -> e1 , s2 -> e2
@@ -270,12 +270,17 @@ export function createRenderer(options) {
     // unknown : 获取操作数量
     // 如上例子， e2 为 4 - 2 + 1 = 3 
     let toBePatched = e2 - s2 + 1
-    
     // 为新节点设置映射表 
     const keyToNewIndexMap = new Map()
     for (let i = s2; i <= e2; i++) {
       keyToNewIndexMap.set(c2[i].key, i)
     }
+    console.log(keyToNewIndexMap);
+    
+    
+    // unknown sequnece list -> 记录新旧节点之间的关系
+    
+    const seq = new Array(toBePatched).fill(0)
 
     // 新节点拥有的不同节点已经获取，并且建立映射表
     // 遍历旧节点，确定与新节点的区别 ，新无则删，新有则patch
@@ -288,15 +293,20 @@ export function createRenderer(options) {
       if(newIndex == null){
         unmount(oldVNode)
       } else {
+        // 记录的是在 uknown sequence 中的位置关系
+        // seq中存储的索引值加一，防止记录的目标在序列首位时为0，和初始值0冲突
+        seq[newIndex - s2] = i + 1
         patch(oldVNode, c2[newIndex], el)
       }
-      
     }
+    
+    console.log(seq);
+    
     
     // toBePatched 为unknown状态下的可操作数
     /*
       a b [c d e] f g
-      a b [e q d] f g 
+      a b [q c d] f g 
         currentIndex ->  
           toBePatched是执行长度
           i是start from start的停止索引 
@@ -310,7 +320,9 @@ export function createRenderer(options) {
       const anchor = currentIndex + 1 < c2.length ?  c2[currentIndex+1].el : null
       
       // 若该虚拟节点el上没记录任何数据，则是新增节点
-      if(child.el == null){
+      // if(child.el == null)
+      // ✨ 如果在seq中记录值为0，则代表旧节点中无该节点，为新增节点
+      if(seq[i] === 0){
         patch(null,child,el,anchor)
       } else {
         // 非新增节点，调整位置，在unknown sequence 中，已经将非新增的可复用节点插入，但位置不对
@@ -318,7 +330,6 @@ export function createRenderer(options) {
         hostInsert(child.el, el, anchor)
       }
     }
-
   }
 
   function patchChildren(n1, n2, el) {
