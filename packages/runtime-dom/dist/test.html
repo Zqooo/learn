@@ -9,30 +9,6 @@
 </head>
 
 <body>
-  <script>
-    const arr = [2, 3, 7, 6, 8, 4, 9, 5]
-    /*
-    
-      取出原序列的某一项，和dq的最后一项最比较
-        如果比最后一项大，直接最追加到尾部
-        如果比最后一项小，则找到序列中比他当前大的替换掉
-    */
-    function tx(arr) {
-      const sequence = []
-      arr.forEach(item => {
-        if (sequence.length == 0  || sequence[sequence.length - 1] < item) {
-          sequence.push(item)
-        } else {
-          const firstMoreIndex = sequence.findIndex(_item => _item > item)
-          sequence[firstMoreIndex] = item
-        }
-      })
-
-      return sequence.length
-    }
-
-    console.log(tx(arr));
-  </script>
 </body>
 
 </html>

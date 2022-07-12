@@ -125,19 +125,29 @@
       若有，则是在uknown sequence第一环节中已经复用渲染的节点，通过hostInsert进行位置更正
 
   3. diff
+
+  在 to sequenced node 的步骤过程中，是先添入，再排序
+  
+  ✨ 在优化中，应该是确定最长递增子序列，然后进行优化排序，不用每个都排序
+
   a b [c d e] f g
   a b [q c d] f g 
 
-  set new node list -> 
+  1. set new node Map -> 
     const keyToNewIndexMap = new Map() 
     [q c d]
     forEach the new node list --> {q:2, c:3, d:4}
   
-  set uknown sequence list ->
-    const seq = new Array(toBePatched).fill(0)
-    [c d e]
+  2. set uknown sequence list ->
+    const seq = new Array(toBePatched).fill(0) -> seq [0, 0, 0]
+    
     <!-- 获取的节点中，若有值，则寻找最长递增子序列的长度 -->
-    forEach the old node list --> [0, 3, 4] 
+    old us list : [c d e]
+    forEach the old us list --> seq [0, 3, 4] 
+
+  3. get the lingest child sequence -> getSequence
+    
+    
 
     
     
