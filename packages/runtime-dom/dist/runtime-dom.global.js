@@ -499,35 +499,36 @@ var VueRuntimeDOM = (() => {
             i++;
           }
         }
-      }
-      let s1 = i;
-      let s2 = i;
-      let toBePatched = e2 - s2 + 1;
-      const keyToNewIndexMap = /* @__PURE__ */ new Map();
-      for (let i2 = s2; i2 <= e2; i2++) {
-        keyToNewIndexMap.set(c2[i2].key, i2);
-      }
-      console.log(keyToNewIndexMap);
-      const seq = new Array(toBePatched).fill(0);
-      for (let i2 = s1; i2 <= e1; i2++) {
-        const oldVNode = c1[i2];
-        let newIndex = keyToNewIndexMap.get(oldVNode.key);
-        if (newIndex == null) {
-          unmount(oldVNode);
-        } else {
-          seq[newIndex - s2] = i2 + 1;
-          patch(oldVNode, c2[newIndex], el);
+      } else {
+        let s1 = i;
+        let s2 = i;
+        let toBePatched = e2 - s2 + 1;
+        const keyToNewIndexMap = /* @__PURE__ */ new Map();
+        for (let i2 = s2; i2 <= e2; i2++) {
+          keyToNewIndexMap.set(c2[i2].key, i2);
         }
-      }
-      console.log(seq);
-      for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
-        const currentIndex = s2 + i2;
-        const child = c2[currentIndex];
-        const anchor = currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
-        if (seq[i2] === 0) {
-          patch(null, child, el, anchor);
-        } else {
-          hostInsert(child.el, el, anchor);
+        const seq = new Array(toBePatched).fill(0);
+        for (let i2 = s1; i2 <= e1; i2++) {
+          const oldVNode = c1[i2];
+          let newIndex = keyToNewIndexMap.get(oldVNode.key);
+          if (newIndex == null) {
+            unmount(oldVNode);
+          } else {
+            seq[newIndex - s2] = i2 + 1;
+            patch(oldVNode, c2[newIndex], el);
+          }
+        }
+        console.log(s2);
+        console.log(seq);
+        for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
+          const currentIndex = s2 + i2;
+          const child = c2[currentIndex];
+          const anchor = currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
+          if (seq[i2] === 0) {
+            patch(null, child, el, anchor);
+          } else {
+            hostInsert(child.el, el, anchor);
+          }
         }
       }
     }
