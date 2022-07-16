@@ -1,6 +1,67 @@
 import { isNumber, isString } from "@vue/shared"
 import { createVNode, isSameVNode, ShapeFlags, Text } from "./createVNode"
 
+function getSequence(arr){
+  // 🚩 result 记录的是下标，0是arr中的第一位，默认arr中第一位是最小值
+  let result = [0]
+  // lastIndex 是result中的最后一项，在遍历过程中result一直在递增，每次都需要更新
+  let lastIndex
+  let len = arr.length
+  let p = new Array(len).fill(0)
+  let start
+  let end
+  let middle = 0
+  for(let i = 0 ; i < len ; i++){
+    // arrI 记录的是arr中的目标值
+    let arrI = arr[i]
+    // 若该值为0，则为新增节点，无需进行记录
+    if(arrI !== 0){
+      lastIndex = result[result.length - 1]
+      // 若当前值比最大值还大，直接推入（✨ 走1的逻辑），并且跳出这次循环，不进行后续逻辑
+      if(arr[lastIndex] < arrI){
+        // lastIndex是result最末位
+        p[i] = lastIndex
+        result.push(i)  
+        continue
+      }
+      // ✨进行二分计算
+
+      // 获取头尾下标
+      start = 0 
+      end = result.length - 1
+      while(start < end){
+        // 二分，获取中间值，向下取整 （按位或一个0能向下取整）
+        middle = ((start + end) / 2) | 0
+        // result 取的是下标，arr取出目标值，判断具体目标值
+        if(arr[result[middle]] < arrI){
+          // [1, 2, 3, 4, 5, 7, 8]  6 
+          // 若目标值比当前值小，则初始点往后推
+          start = middle + 1
+        } else {
+          // 若目标值比当前值大，则末位点往前推
+          end = middle
+        }
+      }
+      // 在while中，start最后会等同于end，循环的终点是找到符合目标的数据
+      if(arrI < arr[result[start]]) {
+        // 替换后，要记录前一位的索引
+        p[i] = result[start - 1]
+        result[start] = i
+      }
+    }
+  } 
+  
+  // 倒叙追溯 从小到大进行排序
+  let i = result.length;
+  // 先取到最后一位，然后往前追溯
+  let last = result[i - 1]
+  while(i-- > 0) {
+    result[i] = last
+    last = p[last]
+  }
+  return result
+}
+
 export function createRenderer(options) {
   // 取出配置中的数据，进行重命名
   let {
@@ -104,7 +165,7 @@ export function createRenderer(options) {
     hostInsert(el, container, anchor)
 
   }
-
+    
   // 新节点为文本节点的处理逻辑
   function processText(n1, n2, container) {
     // n1 为 null时，为初始化渲染
@@ -295,15 +356,14 @@ export function createRenderer(options) {
           patch(oldVNode, c2[newIndex], el)
         }
       }
-      console.log(s2);
       
-      console.log(seq);
-
+      let incr = getSequence(seq)
+      let j = incr.length - 1
 
       // toBePatched 为unknown状态下的可操作数
       /*
-        a b [c d e] f g
-        a b [q c d] f g 
+        a b [c d e f] g
+        a b [q f c d] g 
           currentIndex ->  
             toBePatched是执行长度
             i是start from start的停止索引 
@@ -324,7 +384,12 @@ export function createRenderer(options) {
         } else {
           // 非新增节点，调整位置，在unknown sequence 中，已经将非新增的可复用节点插入，但位置不对
           // 同一个节点（同一个指针） insertBefore会根据anchor调整位置
-          hostInsert(child.el, el, anchor)
+          
+          if(i !== incr[j]){
+            hostInsert(child.el, el, anchor)
+          } else {
+            j--
+          }
         }
       }
     }

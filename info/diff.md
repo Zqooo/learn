@@ -153,8 +153,16 @@
     forEach the old us list --> seq [0, 3, 4] 
 
     <!-- 获取到的seq传到getsequence中，获取最长递增子序列 -->
+    ❗️ 传进来的序号具体内容不重要，getsequence只是根据传进来的内容确定哪个下标不需要被动
+    -> 不需要去管seq中的序号是否被+1或-1
   3. get the longest child sequence -> getSequence
+
+    在getSequence中，传进去的是 [0， 3， 4]
+    获取到的最长递增子序列个数 -> [0, 1, 2]
+
+    新增节点(0)会被判断改变的位子，而最长递增序列节点也不会变动，被变动的只有需要更改位置的乱序节点
     
+
   
 
     

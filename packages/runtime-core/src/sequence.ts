@@ -95,7 +95,6 @@ function getSequence(arr){
   return result
 }
 
-const a = getSequence([2, 3, 1, 5, 6, 8, 7, 9, 4])
 
 /*
     arr(seq)  -> [2, 3, 1, 5, 6, 8, 7, 9, 4]

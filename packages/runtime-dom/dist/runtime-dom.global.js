@@ -395,6 +395,47 @@ var VueRuntimeDOM = (() => {
   };
 
   // packages/runtime-core/src/renderer.ts
+  function getSequence(arr) {
+    let result = [0];
+    let lastIndex;
+    let len = arr.length;
+    let p = new Array(len).fill(0);
+    let start;
+    let end;
+    let middle = 0;
+    for (let i2 = 0; i2 < len; i2++) {
+      let arrI = arr[i2];
+      if (arrI !== 0) {
+        lastIndex = result[result.length - 1];
+        if (arr[lastIndex] < arrI) {
+          p[i2] = lastIndex;
+          result.push(i2);
+          continue;
+        }
+        start = 0;
+        end = result.length - 1;
+        while (start < end) {
+          middle = (start + end) / 2 | 0;
+          if (arr[result[middle]] < arrI) {
+            start = middle + 1;
+          } else {
+            end = middle;
+          }
+        }
+        if (arrI < arr[result[start]]) {
+          p[i2] = result[start - 1];
+          result[start] = i2;
+        }
+      }
+    }
+    let i = result.length;
+    let last = result[i - 1];
+    while (i-- > 0) {
+      result[i] = last;
+      last = p[last];
+    }
+    return result;
+  }
   function createRenderer(options) {
     let {
       createElement: hostCreateElement,
@@ -518,8 +559,8 @@ var VueRuntimeDOM = (() => {
             patch(oldVNode, c2[newIndex], el);
           }
         }
-        console.log(s2);
-        console.log(seq);
+        let incr = getSequence(seq);
+        let j = incr.length - 1;
         for (let i2 = toBePatched - 1; i2 >= 0; i2--) {
           const currentIndex = s2 + i2;
           const child = c2[currentIndex];
@@ -527,7 +568,11 @@ var VueRuntimeDOM = (() => {
           if (seq[i2] === 0) {
             patch(null, child, el, anchor);
           } else {
-            hostInsert(child.el, el, anchor);
+            if (i2 !== incr[j]) {
+              hostInsert(child.el, el, anchor);
+            } else {
+              j--;
+            }
           }
         }
       }
