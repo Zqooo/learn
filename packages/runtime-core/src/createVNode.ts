@@ -44,6 +44,9 @@ export function createVNode(type, props = null, children = null){
 // 文本转虚拟节点的标识（节点类型为Symbol('Text')）
 export const Text = Symbol('Text')
 
+// 创建一个空节点，可以用于存放多个text类型节点
+export const Fragment = Symbol('Fragment')
+
 //判断是否为相同的虚拟节点，在diff算法同级比较时进行
 export function isSameVNode(v1, v2){
   return v1.type === v2.type && v1.key == v2.key

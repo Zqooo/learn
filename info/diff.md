@@ -19,6 +19,7 @@
       若有，则和新虚拟节点进行相同特性判断(isSameVNode)，确定是否卸载旧节点
     2.判断该节点类型
       Text  -> processText
+      Fargment -> processFragment
       other -> processElement
    -> processElement 节点挂载逻辑处理函数
     判断当是否有旧节点

@@ -34,7 +34,7 @@
 */
 
 // 功能实现核心逻辑
-function getSequence(arr){
+export function getSequence(arr){
   // 🚩 result 记录的是下标，0是arr中的第一位，默认arr中第一位是最小值
   let result = [0]
   // lastIndex 是result中的最后一项，在遍历过程中result一直在递增，每次都需要更新

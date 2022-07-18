@@ -34,6 +34,7 @@ var VueRuntimeDOM = (() => {
   // packages/runtime-dom/src/index.ts
   var src_exports = {};
   __export(src_exports, {
+    Fragment: () => Fragment,
     ShapeFlags: () => ShapeFlags,
     Text: () => Text,
     computed: () => computed,
@@ -93,6 +94,7 @@ var VueRuntimeDOM = (() => {
     return vNode;
   }
   var Text = Symbol("Text");
+  var Fragment = Symbol("Fragment");
   function isSameVNode(v1, v2) {
     return v1.type === v2.type && v1.key == v2.key;
   }
@@ -394,7 +396,7 @@ var VueRuntimeDOM = (() => {
     }
   };
 
-  // packages/runtime-core/src/renderer.ts
+  // packages/runtime-core/src/sequence.ts
   function getSequence(arr) {
     let result = [0];
     let lastIndex;
@@ -436,6 +438,8 @@ var VueRuntimeDOM = (() => {
     }
     return result;
   }
+
+  // packages/runtime-core/src/renderer.ts
   function createRenderer(options) {
     let {
       createElement: hostCreateElement,
@@ -488,11 +492,6 @@ var VueRuntimeDOM = (() => {
         mountChildren(children, el);
       }
       hostInsert(el, container, anchor);
-    }
-    function processText(n1, n2, container) {
-      if (n1 == null) {
-        hostInsert(n2.el = hostCreateTextNode(n2.children), container);
-      }
     }
     function unmountChildren(children) {
       children.forEach((child) => {
@@ -613,6 +612,16 @@ var VueRuntimeDOM = (() => {
       patchProps(oldProps, newProps, el);
       patchChildren(n1, n2, el);
     }
+    function processText(n1, n2, container) {
+      if (n1 == null) {
+        hostInsert(n2.el = hostCreateTextNode(n2.children), container);
+      } else {
+        let el = n2.el = n1.el;
+        if (n1.children !== n2.children) {
+          hostSetElementText(el, n2.children);
+        }
+      }
+    }
     function processElement(n1, n2, container, anchor) {
       if (n1 == null) {
         mountElement(n2, container, anchor);
@@ -620,7 +629,17 @@ var VueRuntimeDOM = (() => {
         patchElement(n1, n2, container);
       }
     }
+    function processFragment(n1, n2, container) {
+      if (n1 == null) {
+        mountChildren(n2.children, container);
+      } else {
+        patchKeyedChildren(n1.children, n2.children, container);
+      }
+    }
     function unmount(n1) {
+      if (n1.type == Fragment) {
+        return unmountChildren(n1.children);
+      }
       hostRemove(n1.el);
     }
     function patch(n1, n2, container, anchor = null) {
@@ -633,6 +652,9 @@ var VueRuntimeDOM = (() => {
         case Text:
           processText(n1, n2, container);
           break;
+        case Fragment:
+          processFragment(n1, n2, container);
+          break;
         default:
           if (shapeFlag & 1 /* ELEMENT */) {
             processElement(n1, n2, container, anchor);
@@ -641,7 +663,9 @@ var VueRuntimeDOM = (() => {
     }
     function render2(vnode, container) {
       if (vnode == null) {
-        unmount(container.vnode);
+        if (container.vnode) {
+          unmount(container.vnode);
+        }
       } else {
         patch(container.vnode || null, vnode, container);
         container.vnode = vnode;

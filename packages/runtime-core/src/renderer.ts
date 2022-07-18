@@ -1,66 +1,6 @@
 import { isNumber, isString } from "@vue/shared"
-import { createVNode, isSameVNode, ShapeFlags, Text } from "./createVNode"
-
-function getSequence(arr){
-  // 🚩 result 记录的是下标，0是arr中的第一位，默认arr中第一位是最小值
-  let result = [0]
-  // lastIndex 是result中的最后一项，在遍历过程中result一直在递增，每次都需要更新
-  let lastIndex
-  let len = arr.length
-  let p = new Array(len).fill(0)
-  let start
-  let end
-  let middle = 0
-  for(let i = 0 ; i < len ; i++){
-    // arrI 记录的是arr中的目标值
-    let arrI = arr[i]
-    // 若该值为0，则为新增节点，无需进行记录
-    if(arrI !== 0){
-      lastIndex = result[result.length - 1]
-      // 若当前值比最大值还大，直接推入（✨ 走1的逻辑），并且跳出这次循环，不进行后续逻辑
-      if(arr[lastIndex] < arrI){
-        // lastIndex是result最末位
-        p[i] = lastIndex
-        result.push(i)  
-        continue
-      }
-      // ✨进行二分计算
-
-      // 获取头尾下标
-      start = 0 
-      end = result.length - 1
-      while(start < end){
-        // 二分，获取中间值，向下取整 （按位或一个0能向下取整）
-        middle = ((start + end) / 2) | 0
-        // result 取的是下标，arr取出目标值，判断具体目标值
-        if(arr[result[middle]] < arrI){
-          // [1, 2, 3, 4, 5, 7, 8]  6 
-          // 若目标值比当前值小，则初始点往后推
-          start = middle + 1
-        } else {
-          // 若目标值比当前值大，则末位点往前推
-          end = middle
-        }
-      }
-      // 在while中，start最后会等同于end，循环的终点是找到符合目标的数据
-      if(arrI < arr[result[start]]) {
-        // 替换后，要记录前一位的索引
-        p[i] = result[start - 1]
-        result[start] = i
-      }
-    }
-  } 
-  
-  // 倒叙追溯 从小到大进行排序
-  let i = result.length;
-  // 先取到最后一位，然后往前追溯
-  let last = result[i - 1]
-  while(i-- > 0) {
-    result[i] = last
-    last = p[last]
-  }
-  return result
-}
+import { createVNode, isSameVNode, ShapeFlags, Text, Fragment } from "./createVNode"
+import { getSequence } from "./sequence"
 
 export function createRenderer(options) {
   // 取出配置中的数据，进行重命名
@@ -165,15 +105,6 @@ export function createRenderer(options) {
     hostInsert(el, container, anchor)
 
   }
-    
-  // 新节点为文本节点的处理逻辑
-  function processText(n1, n2, container) {
-    // n1 为 null时，为初始化渲染
-    if (n1 == null) {
-      hostInsert(n2.el = hostCreateTextNode(n2.children), container)
-    }
-  }
-
 
   // 目标节点的子节点为数组时进行清空
   // 因为旧节点（vnode）身上都有el记录对应的真实节点，直接通过unmount（hostRemove）进行卸载就行
@@ -496,6 +427,20 @@ export function createRenderer(options) {
     patchChildren(n1, n2, el)
   }
 
+  // 新节点为文本节点的处理逻辑
+  function processText(n1, n2, container) {
+    // n1 为 null时，为初始化渲染
+    if (n1 == null) {
+      hostInsert(n2.el = hostCreateTextNode(n2.children), container)
+    } else {
+      // 更新文本节点
+      let el = n2.el = n1.el
+      if(n1.children !== n2.children){
+        hostSetElementText(el, n2.children)
+      }
+    }
+  }
+
   // 在patch中已经进行新旧节点的相同特性比较，如果没有相同特性，直接平级替代，删除旧节点，将新的虚拟节点渲染挂载
   function processElement(n1, n2, container, anchor) {
     // n1为null的情景下，为初始挂载
@@ -507,8 +452,22 @@ export function createRenderer(options) {
     }
   }
 
+  // 对fragment的处理
+  function processFragment(n1,n2,container){
+    // 子节点挂载
+    if(n1 == null){
+      mountChildren(n2.children, container)
+    } else {
+      patchKeyedChildren(n1.children, n2.children, container)
+    }
+    
+  }
+
   // 节点卸载函数
   function unmount(n1) {
+    if(n1.type == Fragment){
+      return unmountChildren(n1.children)
+    }
     hostRemove(n1.el)
   }
 
@@ -531,38 +490,29 @@ export function createRenderer(options) {
 
     // 优化逻辑
     let { type, shapeFlag } = n2
+    
     switch (type) {
       case Text:
         processText(n1, n2, container)
+        break;
+      case Fragment:
+        processFragment(n1,n2,container)
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(n1, n2, container, anchor)
         }
     }
-    // if (n1 == null) {
-    //   /*
-    //     render(h('span','111'), app)
-    //     h -> vndoe
-    //       -> {
-    //         type: 'h1',
-    //         children: '111'
-    //         props: null
-    //         el: null,
-    //         shapeFlag: 9
-    //       }
-    //   */
-    //   // ✨ n1为null时，进行节点的挂载，将节点渲染到页面上
-    //   mountElement(n2, container)
-    // }
   }
 
   function render(vnode, container) {
 
     // 模板渲染中，节点为空，则卸载对应节点
     if (vnode == null) {
-      unmount(container.vnode)
       // 卸载元素
+      if(container.vnode){
+        unmount(container.vnode)
+      }
     } else {
       // 初始化或更新元素
       // patch中进行初始化或更新节点逻辑，patch的封装目的之一是为了diff算法的比较
