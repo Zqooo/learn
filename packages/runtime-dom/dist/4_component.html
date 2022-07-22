@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- <script src="../../../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script> -->
+  <script src="./runtime-dom.global.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+      const { h, render, Text, Fragment } = VueRuntimeDOM;
+      
+      const VueComponent = {
+        data(){
+          return {name:'zq'} //数据源
+        },
+        render(){ // render函数返回虚拟节点 决定最终渲染的结果
+          return h('button', {onClick:()=>{
+            this.name = 'zqooo'
+          }}, h('span', this.name))
+        }
+      }
+
+      // 处理h函数， 让h函数支持组件类型， 渲染的时候判断如果是组件类型泽调用他的render方法
+      render(h(VueComponent), app)
+  </script>
+</body>
+</html>

@@ -1,4 +1,6 @@
 import { isNumber, isString } from "@vue/shared"
+import { ReactiveEffect } from "packages/reactivity/src/effect"
+import { createComponentInstance, setupComponent } from "./component"
 import { createVNode, isSameVNode, ShapeFlags, Text, Fragment } from "./createVNode"
 import { getSequence } from "./sequence"
 
@@ -287,7 +289,7 @@ export function createRenderer(options) {
           patch(oldVNode, c2[newIndex], el)
         }
       }
-      
+
       let incr = getSequence(seq)
       let j = incr.length - 1
 
@@ -315,8 +317,8 @@ export function createRenderer(options) {
         } else {
           // 非新增节点，调整位置，在unknown sequence 中，已经将非新增的可复用节点插入，但位置不对
           // 同一个节点（同一个指针） insertBefore会根据anchor调整位置
-          
-          if(i !== incr[j]){
+
+          if (i !== incr[j]) {
             hostInsert(child.el, el, anchor)
           } else {
             j--
@@ -435,7 +437,7 @@ export function createRenderer(options) {
     } else {
       // 更新文本节点
       let el = n2.el = n1.el
-      if(n1.children !== n2.children){
+      if (n1.children !== n2.children) {
         hostSetElementText(el, n2.children)
       }
     }
@@ -453,19 +455,91 @@ export function createRenderer(options) {
   }
 
   // 对fragment的处理
-  function processFragment(n1,n2,container){
+  function processFragment(n1, n2, container) {
     // 子节点挂载
-    if(n1 == null){
+    if (n1 == null) {
       mountChildren(n2.children, container)
     } else {
       patchKeyedChildren(n1.children, n2.children, container)
     }
-    
+
+  }
+
+  // 创建组件渲染的effect函数
+  function setupRenderEffect(instance, container, anchor) {
+    const componentUpdate = () => {
+      const { render, data } = instance
+      // 初次渲染 
+      if (!instance.isMounted) {
+        // 让组件的render函数中的this指向组件的data数据，这样this取的就是当前组件的data数据
+        // 组件最终要渲染的虚拟节点，就是subTree
+        const subTree = render.call(data)
+        // 挂载虚拟节点
+        patch(null,subTree,container,anchor)
+
+        // 更新组件的subTree数据
+        instance.subTree = subTree
+        // 更新组件的挂载状态
+        instance.isMounted = true
+      } else {
+        // 更新逻辑
+        const subTree = render.call(data)
+
+        // 进行patch挂载
+        patch(instance.subTree,subTree,container,anchor)
+        
+        instance.subTree = subTree
+      }
+    }
+
+    // 在setupComponent中，已经对component的data数据进行相应式处理
+    // 对componentUpdate方法进行effect封箱操作，其中调用了component的data数据，形成依赖
+    // 当数据改变时，effect被执行
+    const effect = new ReactiveEffect(componentUpdate)
+
+    // 确定run方法指向当前的实例
+    let update = instance.update = effect.run.bind(effect)
+
+    update()
+  }
+
+
+  // 组件挂载函数
+  function mountComponent(vnode, container, anchor) {
+    /*
+      组件挂载流程
+      1. new Component => 组件实例
+      
+      2. 组件挂载前 需要产生一个组件的实例，（类的作用，每个实例都有自己的状态管理）记录组件状态，组件属性，组件生命周期等
+      3. 给组件产生一个effect，这样可以组件数据变化后重新渲染
+      ✨ 组件优点：复用，逻辑拆分，维护，vue组件级更新
+    */
+    // 
+    // 1 🪜
+    // 在虚拟节点上存放对应component实例，方便复用
+    const instance = vnode.component = createComponentInstance(vnode)
+
+    // 2 🪜
+    setupComponent(instance)
+
+    // 3 🪜
+    setupRenderEffect(instance, container, anchor)
+  }
+
+  // for component
+  function processComponent(n1, n2, container, anchor) {
+    if (n1 == null) {
+      // 组件初始化
+      mountComponent(n2, container, anchor)
+    } else {
+      // 组件的更新流程 插槽更新 属性更新
+
+    }
   }
 
   // 节点卸载函数
   function unmount(n1) {
-    if(n1.type == Fragment){
+    if (n1.type == Fragment) {
       return unmountChildren(n1.children)
     }
     hostRemove(n1.el)
@@ -490,17 +564,19 @@ export function createRenderer(options) {
 
     // 优化逻辑
     let { type, shapeFlag } = n2
-    
+
     switch (type) {
       case Text:
         processText(n1, n2, container)
         break;
       case Fragment:
-        processFragment(n1,n2,container)
+        processFragment(n1, n2, container)
         break;
       default:
         if (shapeFlag & ShapeFlags.ELEMENT) {
           processElement(n1, n2, container, anchor)
+        } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+          processComponent(n1, n2, container, anchor)
         }
     }
   }
@@ -510,7 +586,7 @@ export function createRenderer(options) {
     // 模板渲染中，节点为空，则卸载对应节点
     if (vnode == null) {
       // 卸载元素
-      if(container.vnode){
+      if (container.vnode) {
         unmount(container.vnode)
       }
     } else {

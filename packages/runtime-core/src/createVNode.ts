@@ -1,10 +1,11 @@
-import { isArray, isString } from "@vue/shared"
+import { isArray, isObject, isString } from "@vue/shared"
 
 // 创建虚拟节点逻辑函数
 export function createVNode(type, props = null, children = null){
   // vue3中对虚拟节点进行标记
   // 初始化shapeFlag状态值，有节点设置的状态下，如’h1‘'span'，初始化为1
-  const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0
+  const shapeFlag = isString(type) ? ShapeFlags.ELEMENT :
+         isObject(type) ? ShapeFlags.STATEFUL_COMPONENT : 0
   
   // 对应真实节点
   const vNode = {

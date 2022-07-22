@@ -72,7 +72,7 @@ var VueRuntimeDOM = (() => {
 
   // packages/runtime-core/src/createVNode.ts
   function createVNode(type, props = null, children = null) {
-    const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : 0;
+    const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : isObject(type) ? ShapeFlags.STATEFUL_COMPONENT : 0;
     const vNode = {
       __v_isVNode: true,
       type,
@@ -396,6 +396,30 @@ var VueRuntimeDOM = (() => {
     }
   };
 
+  // packages/runtime-core/src/component.ts
+  function createComponentInstance(vnode) {
+    const instance = {
+      data: null,
+      vnode,
+      subTree: null,
+      isMounted: false,
+      update: null,
+      render: null
+    };
+    return instance;
+  }
+  function setupComponent(instance) {
+    let { type, props, chidlren } = instance.vnode;
+    let { data, render: render2 } = type;
+    if (data) {
+      if (!isFunction(data)) {
+        return console.warn(`The data option must be a function`);
+      }
+      instance.data = reactive(data.call({}));
+    }
+    instance.render = render2;
+  }
+
   // packages/runtime-core/src/sequence.ts
   function getSequence(arr) {
     let result = [0];
@@ -636,6 +660,35 @@ var VueRuntimeDOM = (() => {
         patchKeyedChildren(n1.children, n2.children, container);
       }
     }
+    function setupRenderEffect(instance, container, anchor) {
+      const componentUpdate = () => {
+        const { render: render3, data } = instance;
+        if (!instance.isMounted) {
+          const subTree = render3.call(data);
+          patch(null, subTree, container, anchor);
+          instance.subTree = subTree;
+          instance.isMounted = true;
+        } else {
+          const subTree = render3.call(data);
+          patch(instance.subTree, subTree, container, anchor);
+          instance.subTree = subTree;
+        }
+      };
+      const effect2 = new ReactiveEffect(componentUpdate);
+      let update = instance.update = effect2.run.bind(effect2);
+      update();
+    }
+    function mountComponent(vnode, container, anchor) {
+      const instance = vnode.component = createComponentInstance(vnode);
+      setupComponent(instance);
+      setupRenderEffect(instance, container, anchor);
+    }
+    function processComponent(n1, n2, container, anchor) {
+      if (n1 == null) {
+        mountComponent(n2, container, anchor);
+      } else {
+      }
+    }
     function unmount(n1) {
       if (n1.type == Fragment) {
         return unmountChildren(n1.children);
@@ -658,6 +711,8 @@ var VueRuntimeDOM = (() => {
         default:
           if (shapeFlag & 1 /* ELEMENT */) {
             processElement(n1, n2, container, anchor);
+          } else if (shapeFlag & 4 /* STATEFUL_COMPONENT */) {
+            processComponent(n1, n2, container, anchor);
           }
       }
     }
